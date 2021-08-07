@@ -115,6 +115,7 @@ You can send the bifrost.py and install the dependencies, or create and script/e
 * Upload big files anonymously
 * Live/recorded voice streaming
 * Fix Bugs/Issues
+* In memory execution
 
 **Screen live stream is not possible trough Discord API :(**
 
