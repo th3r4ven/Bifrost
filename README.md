@@ -33,6 +33,8 @@ So for every client that you are going to "infect", you will send a copy of this
 
 ### Virustotal
 
+**Bifrost is currently detected by Windows defender, I'm already trying to solve this "problem", and bypass it again.**
+
 Virustotal detection was **5/67** when there was none defense against sandbox execution.
 
 Antivirus that detected Bifrost as malicious was `SecureAge APEX`, `Jiangmin`, `Cynet`, `Zillya` and `Palo Alto Networks`
